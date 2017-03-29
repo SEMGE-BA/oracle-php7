@@ -63,5 +63,4 @@ ENV DIR=/var/www/html/
 RUN mkdir -p $DIR
 WORKDIR $DIR
 ADD . $DIR
-RUN composer update
 
