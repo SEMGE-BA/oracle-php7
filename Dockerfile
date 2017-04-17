@@ -62,5 +62,3 @@ RUN echo "xdebug.remote_host="`/sbin/ip route|awk '/default/ { print $3 }'` >> $
 ENV DIR=/var/www/html/
 RUN mkdir -p $DIR
 WORKDIR $DIR
-ADD . $DIR
-
