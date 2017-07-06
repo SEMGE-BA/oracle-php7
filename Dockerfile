@@ -8,7 +8,8 @@ RUN apt-get install -y git \
                        curl \
                        libmcrypt-dev \
                        zlib1g-dev \
-                       libxslt-dev
+                       libxslt-dev \
+                       libpng-dev
 
 WORKDIR /tmp
 
@@ -42,7 +43,8 @@ RUN docker-php-ext-install -j$(nproc) oci8 \
                                         zip \
                                         mysqli \
                                         pdo_mysql \
-                                        xsl
+                                        xsl \
+                                        gd
 
 
 ENV XDEBUGINI_PATH=/usr/local/etc/php/conf.d/xdebug.ini
