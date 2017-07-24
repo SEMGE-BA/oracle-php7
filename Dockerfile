@@ -50,10 +50,10 @@ RUN docker-php-ext-install -j$(nproc) oci8 \
 ENV XDEBUGINI_PATH=/usr/local/etc/php/conf.d/xdebug.ini
 RUN yes | pecl install xdebug
 RUN echo "zend_extension="`find /usr/local/lib/php/extensions/ -iname 'xdebug.so'` > $XDEBUGINI_PATH \
-    && echo "zend_extension=$(find /usr/local/lib/php/extensions/ -name xdebug.so)" >> $XDEBUGINI_PATH \
     && echo "xdebug.remote_enable=on" >> $XDEBUGINI_PATH \
     && echo "xdebug.remote_autostart=on" >> $XDEBUGINI_PATH \
-    && echo "xdebug.remote_connect_back=off" >> $XDEBUGINI_PATH \
+    && echo "xdebug.remote_connect_back=on" >> $XDEBUGINI_PATH \
+    && echo "xdebug.idkey=xdbg" >> $XDEBUGINI_PATH \
     && echo "xdebug.remote_handler=dbgp" >> $XDEBUGINI_PATH \
     && echo "xdebug.profiler_enable=0" >> $XDEBUGINI_PATH \
     && echo "xdebug.profiler_output_dir=\"/var/www/html\""  >> $XDEBUGINI_PATH \
