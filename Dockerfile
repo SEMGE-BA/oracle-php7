@@ -9,7 +9,9 @@ RUN apt-get install -y git \
                        libmcrypt-dev \
                        zlib1g-dev \
                        libxslt-dev \
-                       libpng-dev
+                       libpng-dev \
+                       libfontconfig \
+                       ca-certificates
 
 WORKDIR /tmp
 
@@ -63,4 +65,5 @@ RUN echo "xdebug.remote_host="`/sbin/ip route|awk '/default/ { print $3 }'` >> $
 
 ENV DIR=/var/www/html/
 RUN mkdir -p $DIR
+ADD ./bin/phantomjs /usr/bin/phantomjs
 WORKDIR $DIR
