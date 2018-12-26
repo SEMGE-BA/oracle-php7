@@ -63,6 +63,26 @@ RUN echo "zend_extension="`find /usr/local/lib/php/extensions/ -iname 'xdebug.so
 
 RUN echo "xdebug.remote_host="`/sbin/ip route|awk '/default/ { print $3 }'` >> $XDEBUGINI_PATH
 
+# Microsoft SQL Server Prerequisites
+ENV ACCEPT_EULA=Y
+RUN apt-get update \
+    && curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
+    && curl https://packages.microsoft.com/config/debian/8/prod.list \
+        > /etc/apt/sources.list.d/mssql-release.list \
+    && apt-get install -y --no-install-recommends \
+        locales \
+        apt-transport-https \
+    && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
+    && locale-gen \
+    && apt-get update \
+    && apt-get -y --no-install-recommends install \
+        msodbcsql \
+        unixodbc-dev \
+        mssql-tools
+
+RUN pecl install sqlsrv pdo_sqlsrv \
+    && docker-php-ext-enable sqlsrv pdo_sqlsrv
+
 ENV DIR=/var/www/html/
 RUN mkdir -p $DIR
 ADD ./bin/phantomjs /usr/bin/phantomjs
