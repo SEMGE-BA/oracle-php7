@@ -1,6 +1,6 @@
 FROM php:7
-RUN apt-get update
-RUN apt-get install -y git \
+RUN apt-get update 
+RUN apt-get install -y --no-install-recommends apt-utils git \
                        wget \
                        alien \
                        libaio1 \
@@ -11,13 +11,20 @@ RUN apt-get install -y git \
                        libxslt-dev \
                        libpng-dev \
                        libfontconfig \
-                       ca-certificates
+                       ca-certificates \
+                       libfreetype6-dev \
+                       libxml2-dev \
+                       libzip-dev \
+                       libonig-dev \
+                       graphviz 
 
 WORKDIR /tmp
 
 # Install Composer
 RUN curl https://getcomposer.org/installer | php
 RUN mv composer.phar /usr/bin/composer
+RUN pecl install mcrypt-1.0.3
+
 
 # Instaling and configuring oracle client
 ADD ./oracle-instantclient12.1-basic-12.1.0.2.0-1.x86_64.rpm /tmp/oracle-instantclient12.1-basic-12.1.0.2.0-1.x86_64.rpm
@@ -38,8 +45,7 @@ RUN ln -s /usr/include/oracle/12.1/client64 $ORACLE_HOME/include
 RUN docker-php-ext-install -j$(nproc) oci8 \
                                         pdo \
                                         pdo_oci \
-                                        pcntl \
-                                        mcrypt \
+                                        pcntl \                                     
                                         mbstring \
                                         tokenizer \
                                         zip \
@@ -63,6 +69,7 @@ RUN echo "zend_extension="`find /usr/local/lib/php/extensions/ -iname 'xdebug.so
 
 RUN echo "xdebug.remote_host="`/sbin/ip route|awk '/default/ { print $3 }'` >> $XDEBUGINI_PATH
 
+RUN  apt-get install -my wget gnupg
 # Microsoft SQL Server Prerequisites
 ENV ACCEPT_EULA=Y
 RUN apt-get update \
@@ -76,12 +83,12 @@ RUN apt-get update \
     && locale-gen \
     && apt-get update \
     && apt-get -y --no-install-recommends install \
-        msodbcsql \
+        msodbcsql17 \
         unixodbc-dev \
         mssql-tools
 
 RUN pecl install sqlsrv pdo_sqlsrv \
-    && docker-php-ext-enable sqlsrv pdo_sqlsrv
+   && docker-php-ext-enable sqlsrv pdo_sqlsrv
 
 ENV DIR=/var/www/html/
 RUN mkdir -p $DIR
