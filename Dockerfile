@@ -1,4 +1,4 @@
-FROM php:7
+FROM php:7.2
 RUN apt-get update 
 RUN apt-get install -y --no-install-recommends apt-utils git \
                        wget \
@@ -23,7 +23,7 @@ WORKDIR /tmp
 # Install Composer
 RUN curl https://getcomposer.org/installer | php
 RUN mv composer.phar /usr/bin/composer
-RUN pecl install mcrypt-1.0.3
+RUN pecl install mcrypt-1.0.0
 
 
 # Instaling and configuring oracle client
