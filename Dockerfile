@@ -1,4 +1,5 @@
 FROM php:7.1
+RUN echo "deb http://security.debian.org/debian-security jessie/updates main" >> /etc/apt/sources.list
 RUN apt-get update 
 RUN apt-get install -y --no-install-recommends apt-utils git \
                        wget \
@@ -15,6 +16,7 @@ RUN apt-get install -y --no-install-recommends apt-utils git \
                        libfreetype6-dev \
                        libxml2-dev \
                        libzip-dev \
+                        libssl1.1 \
                        libonig-dev \
                        graphviz 
 
@@ -71,21 +73,9 @@ RUN echo "xdebug.remote_host="`/sbin/ip route|awk '/default/ { print $3 }'` >> $
 
 RUN  apt-get install -my wget gnupg
 # Microsoft SQL Server Prerequisites
-ENV ACCEPT_EULA=Y
-RUN apt-get update \
-    && curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
-    && curl https://packages.microsoft.com/config/debian/8/prod.list \
-        > /etc/apt/sources.list.d/mssql-release.list \
-    && apt-get install -y --no-install-recommends \
-        locales \
-        apt-transport-https \
-    && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
-    && locale-gen \
-    && apt-get update \
-    && apt-get -y --no-install-recommends install \
-        msodbcsql17 \
-        unixodbc-dev \
-        mssql-tools
+
+
+
 
 
 
