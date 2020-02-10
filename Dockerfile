@@ -87,9 +87,10 @@ RUN apt-get update \
         unixodbc-dev \
         mssql-tools
 
+
 RUN pecl install sqlsrv pdo_sqlsrv \
    && docker-php-ext-enable sqlsrv pdo_sqlsrv
-
+   
 ENV DIR=/var/www/html/
 RUN mkdir -p $DIR
 ADD ./bin/phantomjs /usr/bin/phantomjs
