@@ -1,7 +1,6 @@
-FROM php:7.1
-RUN echo "deb http://security.debian.org/debian-security jessie/updates main" >> /etc/apt/sources.list
-RUN apt-get update 
-RUN apt-get install -y --no-install-recommends apt-utils git \
+FROM php:7
+RUN apt-get update
+RUN apt-get install -y git \
                        wget \
                        alien \
                        libaio1 \
@@ -9,24 +8,19 @@ RUN apt-get install -y --no-install-recommends apt-utils git \
                        curl \
                        libmcrypt-dev \
                        zlib1g-dev \
+                           libzip-dev \
+                           libonig-dev \
                        libxslt-dev \
                        libpng-dev \
                        libfontconfig \
-                       ca-certificates \
-                       libfreetype6-dev \
-                       libxml2-dev \
-                       libzip-dev \
-                        libssl1.1 \
-                       libonig-dev \
-                       graphviz 
+                       ca-certificates\
+                        gnupg
 
 WORKDIR /tmp
 
 # Install Composer
 RUN curl https://getcomposer.org/installer | php
 RUN mv composer.phar /usr/bin/composer
-RUN pecl install mcrypt-1.0.0
-
 
 # Instaling and configuring oracle client
 ADD ./oracle-instantclient12.1-basic-12.1.0.2.0-1.x86_64.rpm /tmp/oracle-instantclient12.1-basic-12.1.0.2.0-1.x86_64.rpm
@@ -44,10 +38,12 @@ RUN ls -al /usr/include/oracle/12.1/client*/*
 RUN ls -al $ORACLE_HOME/lib
 RUN ln -s /usr/include/oracle/12.1/client64 $ORACLE_HOME/include
 
+
+
 RUN docker-php-ext-install -j$(nproc) oci8 \
                                         pdo \
                                         pdo_oci \
-                                        pcntl \                                     
+                                        pcntl \
                                         mbstring \
                                         tokenizer \
                                         zip \
@@ -71,13 +67,24 @@ RUN echo "zend_extension="`find /usr/local/lib/php/extensions/ -iname 'xdebug.so
 
 RUN echo "xdebug.remote_host="`/sbin/ip route|awk '/default/ { print $3 }'` >> $XDEBUGINI_PATH
 
-RUN  apt-get install -my wget gnupg
 # Microsoft SQL Server Prerequisites
+ENV ACCEPT_EULA=Y
+RUN apt-get update \
+    && curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
+    && curl https://packages.microsoft.com/config/debian/8/prod.list \
+        > /etc/apt/sources.list.d/mssql-release.list \
+    && apt-get install -y --no-install-recommends \
+        locales \
+        apt-transport-https \
+    && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
+    && locale-gen \
+    && apt-get update \
+    && apt-get -y --no-install-recommends install \
+        unixodbc-dev \
+        mssql-tools
 
-
-
-
-
+RUN pecl install sqlsrv pdo_sqlsrv \
+    && docker-php-ext-enable sqlsrv pdo_sqlsrv
 
 ENV DIR=/var/www/html/
 RUN mkdir -p $DIR
