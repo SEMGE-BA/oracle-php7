@@ -68,23 +68,23 @@ RUN echo "zend_extension="`find /usr/local/lib/php/extensions/ -iname 'xdebug.so
 RUN echo "xdebug.remote_host="`/sbin/ip route|awk '/default/ { print $3 }'` >> $XDEBUGINI_PATH
 
 # Microsoft SQL Server Prerequisites
-ENV ACCEPT_EULA=Y
-RUN apt-get update \
-    && curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
-    && curl https://packages.microsoft.com/config/debian/8/prod.list \
-        > /etc/apt/sources.list.d/mssql-release.list \
-    && apt-get install -y --no-install-recommends \
-        locales \
-        apt-transport-https \
-    && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
-    && locale-gen \
-    && apt-get update \
-    && apt-get -y --no-install-recommends install \
-        unixodbc-dev \
-        mssql-tools
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+#RUN curl https://packages.microsoft.com/config/ubuntu/18.04/prod.list > /etc/apt/sources.list.d/mssql-tools.list
+RUN curl https://packages.microsoft.com/config/debian/8/prod.list > /etc/apt/sources.list.d/mssql-release.list
+RUN apt-get update
 RUN echo 'y' | ACCEPT_EULA=Y apt-get install msodbcsql17 mssql-tools
-RUN pecl install sqlsrv pdo_sqlsrv \
+RUN echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bash_profile
+RUN echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
+RUN apt-get install -y unixodbc-dev
+RUN pecl install  sqlsrv \
+    && pecl install pdo_sqlsrv \
     && docker-php-ext-enable sqlsrv pdo_sqlsrv
+
+    RUN apt-get update -yqq \
+    && apt-get install -y --no-install-recommends openssl \ 
+    && sed -i 's,^\(MinProtocol[ ]*=\).*,\1'TLSv1.0',g' /etc/ssl/openssl.cnf \
+    && sed -i 's,^\(CipherString[ ]*=\).*,\1'DEFAULT@SECLEVEL=1',g' /etc/ssl/openssl.cnf\
+    && rm -rf /var/lib/apt/lists/*
 
 ENV DIR=/var/www/html/
 RUN mkdir -p $DIR
