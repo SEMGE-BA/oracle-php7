@@ -82,7 +82,7 @@ RUN apt-get update \
     && apt-get -y --no-install-recommends install \
         unixodbc-dev \
         mssql-tools
-
+RUN echo 'y' | ACCEPT_EULA=Y apt-get install msodbcsql17 mssql-tools
 RUN pecl install sqlsrv pdo_sqlsrv \
     && docker-php-ext-enable sqlsrv pdo_sqlsrv
 
