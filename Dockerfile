@@ -1,6 +1,6 @@
 FROM php:7.2
-RUN apt-get update 
-RUN apt-get install -y --no-install-recommends apt-utils git \
+RUN apt-get update
+RUN apt-get install -y git \
                        wget \
                        alien \
                        libaio1 \
@@ -8,23 +8,19 @@ RUN apt-get install -y --no-install-recommends apt-utils git \
                        curl \
                        libmcrypt-dev \
                        zlib1g-dev \
+                           libzip-dev \
+                           libonig-dev \
                        libxslt-dev \
                        libpng-dev \
                        libfontconfig \
-                       ca-certificates \
-                       libfreetype6-dev \
-                       libxml2-dev \
-                       libzip-dev \
-                       libonig-dev \
-                       graphviz 
+                       ca-certificates\
+                        gnupg
 
 WORKDIR /tmp
 
 # Install Composer
 RUN curl https://getcomposer.org/installer | php
 RUN mv composer.phar /usr/bin/composer
-RUN pecl install mcrypt-1.0.0
-
 
 # Instaling and configuring oracle client
 ADD ./oracle-instantclient12.1-basic-12.1.0.2.0-1.x86_64.rpm /tmp/oracle-instantclient12.1-basic-12.1.0.2.0-1.x86_64.rpm
@@ -42,10 +38,12 @@ RUN ls -al /usr/include/oracle/12.1/client*/*
 RUN ls -al $ORACLE_HOME/lib
 RUN ln -s /usr/include/oracle/12.1/client64 $ORACLE_HOME/include
 
+
+
 RUN docker-php-ext-install -j$(nproc) oci8 \
                                         pdo \
                                         pdo_oci \
-                                        pcntl \                                     
+                                        pcntl \
                                         mbstring \
                                         tokenizer \
                                         zip \
@@ -69,28 +67,25 @@ RUN echo "zend_extension="`find /usr/local/lib/php/extensions/ -iname 'xdebug.so
 
 RUN echo "xdebug.remote_host="`/sbin/ip route|awk '/default/ { print $3 }'` >> $XDEBUGINI_PATH
 
-RUN  apt-get install -my wget gnupg
 # Microsoft SQL Server Prerequisites
-ENV ACCEPT_EULA=Y
-RUN apt-get update \
-    && curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
-    && curl https://packages.microsoft.com/config/debian/8/prod.list \
-        > /etc/apt/sources.list.d/mssql-release.list \
-    && apt-get install -y --no-install-recommends \
-        locales \
-        apt-transport-https \
-    && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
-    && locale-gen \
-    && apt-get update \
-    && apt-get -y --no-install-recommends install \
-        msodbcsql17 \
-        unixodbc-dev \
-        mssql-tools
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+#RUN curl https://packages.microsoft.com/config/ubuntu/18.04/prod.list > /etc/apt/sources.list.d/mssql-tools.list
+RUN curl https://packages.microsoft.com/config/debian/8/prod.list > /etc/apt/sources.list.d/mssql-release.list
+RUN apt-get update
+RUN echo 'y' | ACCEPT_EULA=Y apt-get install msodbcsql17 mssql-tools
+RUN echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bash_profile
+RUN echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
+RUN apt-get install -y unixodbc-dev
+RUN pecl install  sqlsrv \
+    && pecl install pdo_sqlsrv \
+    && docker-php-ext-enable sqlsrv pdo_sqlsrv
 
+    RUN apt-get update -yqq \
+    && apt-get install -y --no-install-recommends openssl \ 
+    && sed -i 's,^\(MinProtocol[ ]*=\).*,\1'TLSv1.0',g' /etc/ssl/openssl.cnf \
+    && sed -i 's,^\(CipherString[ ]*=\).*,\1'DEFAULT@SECLEVEL=1',g' /etc/ssl/openssl.cnf\
+    && rm -rf /var/lib/apt/lists/*
 
-RUN pecl install sqlsrv pdo_sqlsrv \
-   && docker-php-ext-enable sqlsrv pdo_sqlsrv
-   
 ENV DIR=/var/www/html/
 RUN mkdir -p $DIR
 ADD ./bin/phantomjs /usr/bin/phantomjs
