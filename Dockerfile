@@ -1,4 +1,4 @@
-FROM php:7
+FROM php:7.2
 RUN apt-get update
 RUN apt-get install -y git \
                        wget \
@@ -14,7 +14,8 @@ RUN apt-get install -y git \
                        libpng-dev \
                        libfontconfig \
                        ca-certificates\
-                        gnupg
+                        gnupg\
+                        ghostscript
 
 WORKDIR /tmp
 
